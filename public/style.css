@@ -15,19 +15,49 @@ main {
     overflow-y: scroll;
 }
 
+.chip {
+    margin-right: 0;
+}
 .chat-container {
     display: flex;
+    padding: 15px 0;
+}
+
+.chat-container.reverse {
+    flex-direction: row-reverse;
+    text-align: right;
 }
 
 .chat-container .message {
-    flex-basis: 0;
-    flex-grow: 1;
     padding: 5px 15px;
 }
 
-.message span {
+.gravatar-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.gravatar-container .time {
     float: right;
     color: #8e8989;
     font-size: x-small;
     padding-top: 5px;
+}
+
+.message.reverse {
+    text-align: right;
+}
+
+.notification-container {
+    text-align: center;
+    font-size: smaller;
+    color: #8e8989;
+}
+
+.select-container {
+    text-align: center;
+    height: 80vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }

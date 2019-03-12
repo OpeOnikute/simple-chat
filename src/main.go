@@ -8,17 +8,32 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-var clients = make(map[*websocket.Conn]bool) // connected clients
-var broadcast = make(chan Message)           // broadcast channel
+// structure of this is:
+// {
+//	chatID: {
+//		*websocket.Conn: bool
+//	}
+//}
+
+var clients = make(map[string]map[*websocket.Conn]bool) // connected clients. Nested Maps chat ID to the connections
+var broadcast = make(chan Message)                      // broadcast channel
 
 var upgrader = websocket.Upgrader{}
 
 // Message defines the structure of messages expected from the client
 type Message struct {
-	Email    string    `json:"email"`
-	Username string    `json:"username"`
-	Message  string    `json:"message"`
-	Time     time.Time `json:"time"`
+	Signal  string  `json:"signal"`
+	ChatID  string  `json:"chatID"`
+	Content Content `json:"content"`
+}
+
+// Content defines the structure of the json message content
+type Content struct {
+	Email     string    `json:"email"`
+	Username  string    `json:"username"`
+	Message   string    `json:"message"`
+	ChatOwner bool      `json:"chatOwner"`
+	Time      time.Time `json:"time"`
 }
 
 func main() {
@@ -49,7 +64,6 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 	defer ws.Close()
 
 	// Register our new client
-	clients[ws] = true
 
 	for {
 		var msg Message
@@ -57,9 +71,13 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 		err := ws.ReadJSON(&msg)
 		if err != nil {
 			log.Printf("error: %v", err)
-			delete(clients, ws)
 			break
 		}
+		//initialize the new chat map if it doesn't exist.
+		if _, ok := clients[msg.ChatID]; !ok {
+			clients[msg.ChatID] = make(map[*websocket.Conn]bool)
+		}
+		clients[msg.ChatID][ws] = true
 		// Send the newly received message to the broadcast channel
 		broadcast <- msg
 	}
@@ -69,13 +87,14 @@ func handleMessages() {
 	for {
 		// Grab the next message from the broadcast channel
 		msg := <-broadcast
-		// Send it out to every client that is currently connected
-		for client := range clients {
+		// Send it out to every client for a specific chat.
+		chatClients := clients[msg.ChatID]
+		for client := range chatClients {
 			err := client.WriteJSON(msg)
 			if err != nil {
 				log.Printf("error: %v", err)
 				client.Close()
-				delete(clients, client)
+				delete(chatClients, client)
 			}
 		}
 	}
