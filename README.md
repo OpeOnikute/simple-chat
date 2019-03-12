@@ -12,3 +12,6 @@ Using as practice to implement web sockets in the [sgx game](https://github.com/
 - Implement private messaging. Broadcasts should only go out to clients with a specific chat ID.
 - Add timestamps to the chat items.
 - Investigate the emoji features.
+
+## PS
+- Running from the base folder won't work, route serving the html assets uses relative paths to find them. So don't do `go run src/main.go`.

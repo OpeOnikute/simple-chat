@@ -15,11 +15,16 @@ new Vue({
         this.ws = new WebSocket('ws://' + window.location.host + '/ws');
         this.ws.addEventListener('message', function(e) {
             var msg = JSON.parse(e.data);
-            self.chatContent += '<div class="chip">'
+            self.chatContent += '<div class="chat-container">' +
+            '<div class="chip">'
                     + '<img src="' + self.gravatarURL(msg.email) + '">' // Avatar
                     + msg.username
                 + '</div>'
-                + emojione.toImage(msg.message) + '<br/>'; // Parse emojis
+                + '<div class="message">'
+                + emojione.toImage(msg.message)
+                // + `<span>${new Date(msg.time).toDateString()}</span>` 
+                + `<span>${new Date(msg.time).toLocaleTimeString()}</span>` 
+                + '</div></div>'; // Parse emojis
 
             var element = document.getElementById('chat-messages');
             element.scrollTop = element.scrollHeight; // Auto scroll to the bottom
@@ -29,11 +34,13 @@ new Vue({
     methods: {
         send: function () {
             if (this.newMsg != '') {
+                debugger;
                 this.ws.send(
                     JSON.stringify({
                         email: this.email,
                         username: this.username,
-                        message: $('<p>').html(this.newMsg).text() // Strip out html
+                        message: $('<p>').html(this.newMsg).text(), // Strip out html
+                        time: new Date()
                     }
                 ));
                 this.newMsg = ''; // Reset newMsg

@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/websocket"
 )
@@ -14,9 +15,10 @@ var upgrader = websocket.Upgrader{}
 
 // Message defines the structure of messages expected from the client
 type Message struct {
-	Email    string `json:"email"`
-	Username string `json:"username"`
-	Message  string `json:"message"`
+	Email    string    `json:"email"`
+	Username string    `json:"username"`
+	Message  string    `json:"message"`
+	Time     time.Time `json:"time"`
 }
 
 func main() {
